@@ -16,10 +16,12 @@ class Command(BaseCommand):
             featured=True
         )
         Product.objects.create(
+            category=category,
             title=Product['title'],
             slug=slugify(Product['title']),
-            description=Product['description'],
             price=Product['price'],
-            category=category,
-            image=Product['image']
+            thumbnail=Product['image'],
+            description=Product['description'],
         )
+
+    print("Products added successfully")
