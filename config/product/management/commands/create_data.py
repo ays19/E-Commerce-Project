@@ -16,12 +16,12 @@ class Command(BaseCommand):
                 featured=True
             )
             Product.objects.create(
-                category=category,
-                title=product['title'],
-                slug=slugify(product['title']),
-                price=product['price'],
-                thumbnail=product['image'],
-                description=product['description']
+                category= category,
+                title= product['title'],
+                slug= slugify(product['title']),
+                price= product['price'],
+                thumbnail= product['image'],
+                description= product['description']
             # rate =Product['rating']['rate'],
             # count =Product['rating']['count']
         )
