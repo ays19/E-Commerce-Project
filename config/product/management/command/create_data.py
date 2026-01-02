@@ -22,6 +22,8 @@ class Command(BaseCommand):
             price=Product['price'],
             thumbnail=Product['image'],
             description=Product['description'],
+            # rate =Product['rating']['rate'],
+            # count =Product['rating']['count']
         )
 
     print("Products added successfully")
