@@ -26,4 +26,4 @@ class Command(BaseCommand):
             # count =Product['rating']['count']
         )
 
-    print("Products added successfully")
+        print("Products added successfully")
