@@ -18,7 +18,7 @@ class Product(models.Model):
     slug= models.SlugField(unique=True)
     featured= models.BooleanField(default=False)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    count = models.DecimalField(max_digits=10, decimal_places=0)
+    count = models.PositiveIntegerField(default=0)
     description= models.TextField(null=True, blank=True, default='N/A')
     created_date= models.DateTimeField(auto_now_add=True)
     updated_date= models.DateTimeField(auto_now=True)
