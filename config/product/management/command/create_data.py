@@ -15,7 +15,7 @@ class Command(BaseCommand):
             slug=slugify(Product['category']),
             featured=True
         )
-        Product.objects.get_or_create(
+        Product.objects.create(
             title=Product['title'],
             slug=slugify(Product['title']),
             description=Product['description'],
