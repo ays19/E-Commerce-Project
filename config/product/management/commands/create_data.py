@@ -14,21 +14,31 @@ class Command(BaseCommand):
             return
         products = response.json()
         
-        for product in products:
+        for item in products:
+            # Category (safe & reusable)
             category, _ = Category.objects.get_or_create(
-                title=product['category'],
-                slug=slugify(product['category']),
-                featured=True
+                title=item.get("category", "Unknown"),
+                slug=slugify(item.get("category", "unknown")),
+                defaults={"featured": True},
             )
-            Product.objects.create(
-                category= category,
-                title= product['title'],
-                slug= slugify(product['title']),
-                price= product['price'],
-                thumbnail= product['image'],
-                description= product['description']
-            # rate =Product['rating']['rate'],
-            # count =Product['rating']['count']
-        )
 
-        print("Products added successfully")
+             # Unique slug handling
+            slug = slugify(item.get("title", "product"))
+
+            if Product.objects.filter(slug=slug).exists():
+                continue  # prevent duplicates
+
+            # Product creation (API-safe)
+            Product.objects.create(
+                category=category,
+                title=item.get("title", "No title"),
+                slug=slug,
+                price=item.get("price", 0),
+                count=item.get("rating", {}).get("count", 0),
+                description=item.get("description", ""),
+                thumbnail=item.get("image", ""),
+            )
+
+        self.stdout.write(
+            self.style.SUCCESS("Products added successfully")
+        )
