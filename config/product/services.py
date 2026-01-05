@@ -17,3 +17,18 @@ def get_or_create_cart(user):
     """
     cart, created = Cart.objects.get_or_create(user=user)
     return cart
+
+def add_to_cart(cart, product, quantity=1):
+    """
+    Adds product to cart safely
+    """
+    item, created = CartItem.objects.get_or_create(
+        cart=cart,
+        product=product
+    )
+
+    if item.quantity + quantity > product.count:
+        raise ValueError("Not enough stock available")
+
+    item.quantity += quantity
+    item.save()
