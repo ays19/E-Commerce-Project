@@ -1,5 +1,5 @@
-from django.views.generic import ListView, DetailView
-from .models import Product, Slider, Category
+from django.views.generic import ListView, DetailView, TemplateView
+from .models import Product, Slider, Category, Cart
 from django.shortcuts import redirect, get_object_or_404
 from product.services import get_or_create_cart, add_to_cart
 
@@ -37,3 +37,17 @@ def add_cart(request, slug):
 
     return redirect("cart")
 
+class CartView(TemplateView):
+    template_name = "cart.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            context["cart"] = Cart.objects.filter(
+                user=self.request.user
+            ).first()
+        else:
+            context["cart"] = None
+
+        return context
