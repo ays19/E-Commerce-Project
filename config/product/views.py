@@ -1,7 +1,9 @@
 from django.views.generic import ListView, DetailView, TemplateView
-from .models import Product, Slider, Category, Cart
+from urllib3 import request
+from .models import Product, Slider, Category, Cart, CartItem
 from django.shortcuts import redirect, get_object_or_404
-from product.services import get_or_create_cart, add_to_cart
+from product.services import get_or_create_cart, add_to_cart,
+from django.contrib.auth.decorators import login_required
 
 
 class Home(ListView):
@@ -51,3 +53,20 @@ class CartView(TemplateView):
             context["cart"] = None
 
         return context
+    
+    @login_required
+    def add_to_cart(request, product_id):
+        product = get_object_or_404(Product, id=product_id)
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+
+        cart_item, created = CartItem.objects.get_or_create(
+        cart=cart,
+        product=product
+    )
+
+        if not created:
+            cart_item.quantity += 1
+
+        cart_item.save()
+        return redirect('cart')
