@@ -3,7 +3,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from urllib3 import request
 from .models import Product, Slider, Category, Cart, CartItem
 from django.shortcuts import redirect, get_object_or_404
-from product.services import get_or_create_cart, add_to_cart,
+from product.services import get_or_create_cart, add_to_cart
 from django.contrib.auth.decorators import login_required
 
 
