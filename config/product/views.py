@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.views.generic import ListView, DetailView, TemplateView
 from urllib3 import request
 from .models import Product, Slider, Category, Cart, CartItem
@@ -70,3 +71,12 @@ class CartView(TemplateView):
 
         cart_item.save()
         return redirect('cart')
+    
+    class CartView(TemplateView):
+        template_name = 'cart/cart.html'
+
+        def get_context_data(self, **kwargs):
+            context = super().get_context_data(**kwargs)
+            cart, _ = Cart.objects.get_or_create(user=self.request.user)
+            context['cart'] = cart
+            return context
