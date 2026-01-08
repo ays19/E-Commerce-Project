@@ -75,5 +75,28 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def checkout(request):
-    cart = Cart.objects.get(user=request.user)
-    return render(request, 'order/checkout.html', {'cart': cart})
+    cart = Cart.objects.filter(user=request.user).first()
+
+    if not cart or not cart.items.exists():
+        messages.error(request, "Your cart is empty")
+        return redirect("cart")
+
+    if request.method == "POST":
+        # later: create Order, OrderItem
+        messages.success(request, "Order placed successfully")
+        return redirect("home")
+
+    total = sum(
+        item.product.price * item.quantity
+        for item in cart.items.all()
+    )
+
+    return render(
+        request,
+        "order/checkout.html",
+        {
+            "cart": cart,
+            "cart_total": total
+        }
+    )
+
