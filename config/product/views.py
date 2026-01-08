@@ -114,12 +114,12 @@ def checkout(request):
                 cart.items.all().delete()
 
             messages.success(request, "Order placed successfully!")
-            return redirect("home")
+            return redirect("order_success")
 
         except Exception as e:
             messages.error(request, str(e))
             return redirect("checkout")
-
+        
     return render(
         request,
         "order/checkout.html",
