@@ -2,7 +2,7 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from django.db import transaction
 from .models import (Product,Slider,Category,Cart,CartItem,Order,OrderItem,)
 
 def reduce_stock(product: Product, quantity: int) -> None:
@@ -81,15 +81,44 @@ def checkout(request):
         messages.error(request, "Your cart is empty")
         return redirect("cart")
 
-    if request.method == "POST":
-        # later: create Order, OrderItem
-        messages.success(request, "Order placed successfully")
-        return redirect("home")
-
     total = sum(
         item.product.price * item.quantity
         for item in cart.items.all()
     )
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=request.user,
+                    first_name=request.POST.get("first_name"),
+                    last_name=request.POST.get("last_name"),
+                    email=request.POST.get("email"),
+                    phone=request.POST.get("phone"),
+                    address=request.POST.get("address"),
+                    total_amount=total,
+                )
+                for item in cart.items.all():
+                    if item.product.count < item.quantity:
+                        raise ValueError("Insufficient stock")
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        price=item.product.price,
+                        quantity=item.quantity,
+                    )
+                    # reduce stock
+                    item.product.count -= item.quantity
+                    item.product.save()
+
+                     # clear cart
+                cart.items.all().delete()
+
+            messages.success(request, "Order placed successfully!")
+            return redirect("home")
+
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect("checkout")
 
     return render(
         request,
