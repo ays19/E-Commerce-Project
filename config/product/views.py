@@ -72,3 +72,8 @@ def remove_from_cart(request, item_id):
     item.delete()
     messages.success(request, "Item removed from cart")
     return redirect("cart")
+
+@login_required
+def checkout(request):
+    cart = Cart.objects.get(user=request.user)
+    return render(request, 'order/checkout.html', {'cart': cart})
