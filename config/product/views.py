@@ -74,17 +74,17 @@ class CartView(TemplateView):
         messages.success(request, "Item removed from cart")
         return redirect("cart")
     
-    class CartView(TemplateView):
-        template_name = 'cart/cart.html'
+class CartView(TemplateView):
+    template_name = 'cart/cart.html'
 
-        def get_context_data(self, **kwargs):
-            context = super().get_context_data(**kwargs)
-            cart, _ = Cart.objects.get_or_create(user=self.request.user)
-            context['cart'] = cart
-            return context
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        context['cart'] = cart
+        return context
         
-        @login_required
-        def remove_from_cart(request, item_id):
-            item = get_object_or_404(CartItem, id=item_id)
-            item.delete()
-            return redirect('cart') 
+    @login_required
+    def remove_from_cart(request, item_id):
+        item = get_object_or_404(CartItem, id=item_id)
+        item.delete()
+        return redirect('cart') 
