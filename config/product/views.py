@@ -1,11 +1,19 @@
-from multiprocessing import context
 from django.views.generic import ListView, DetailView, TemplateView
-from urllib3 import request
-from .models import Product, Slider, Category, Cart, CartItem
-from django.shortcuts import redirect, get_object_or_404
-from product.services import get_or_create_cart, add_to_cart
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
+from .models import (Product,Slider,Category,Cart,CartItem,Order,OrderItem,)
+
+def reduce_stock(product: Product, quantity: int) -> None:
+    if quantity <= 0:
+        raise ValueError("Quantity must be positive")
+
+    if product.count < quantity:
+        raise ValueError("Insufficient stock")
+
+    product.count -= quantity
+    product.save(update_fields=["count"])
 
 class Home(ListView):
     model = Product
@@ -86,3 +94,13 @@ class CartView(TemplateView):
             item = get_object_or_404(CartItem, id=item_id)
             item.delete()
             return redirect('cart') 
+        
+        def reduce_stock(product: Product, quantity: int) -> None:
+    if quantity <= 0:
+        raise ValueError("Quantity must be positive")
+
+    if product.count < quantity:
+        raise ValueError("Insufficient stock")
+
+    product.count -= quantity
+    product.save(update_fields=["count"])
