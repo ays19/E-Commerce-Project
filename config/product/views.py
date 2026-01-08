@@ -38,7 +38,7 @@ class ProductDetails(DetailView):
     slug_url_kwarg = "slug"
 
 class CartView(TemplateView):
-    template_name = "cart.html"
+    template_name = "cart/cart.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -50,41 +50,25 @@ class CartView(TemplateView):
             context["cart"] = None
         return context
     
-    @login_required
-    def add_to_cart(request, product_id):
-        product = get_object_or_404(Product, id=product_id)
-
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        cart_item, created = CartItem.objects.get_or_create(
+@login_required
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
     )
 
-        if not created:
-            cart_item.quantity += 1
+    if not created:
+        cart_item.quantity += 1
 
-        cart_item.save()
-        messages.success(request, "Product added to cart")
-        return redirect('cart')
+    cart_item.save()
+    messages.success(request, "Product added to cart")
+    return redirect('cart')
     
-    @login_required
-    def remove_from_cart(request, item_id):
-        item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-        item.delete()
-        messages.success(request, "Item removed from cart")
-        return redirect("cart")
-    
-class CartView(TemplateView):
-    template_name = 'cart/cart.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        cart, _ = Cart.objects.get_or_create(user=self.request.user)
-        context['cart'] = cart
-        return context
-        
-    @login_required
-    def remove_from_cart(request, item_id):
-        item = get_object_or_404(CartItem, id=item_id)
-        item.delete()
-        return redirect('cart') 
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item.delete()
+    messages.success(request, "Item removed from cart")
+    return redirect("cart")
