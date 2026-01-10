@@ -29,7 +29,6 @@ class Home(ListView):
         context["categories"] = Category.objects.all()
         return context
 
-
 class ProductDetails(DetailView):
     model = Product
     template_name = "product/product-details.html"
@@ -128,4 +127,8 @@ def checkout(request):
             "cart_total": total
         }
     )
+
+@login_required
+def order_success(request):
+    return render(request, "order/success.html")
 
