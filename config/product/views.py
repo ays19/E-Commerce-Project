@@ -74,9 +74,9 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def checkout(request):
-    cart = Cart.objects.filter(user=request.user).first()
+    cart = get_object_or_404(Cart, user=request.user)
 
-    if not cart or not cart.items.exists():
+    if not cart.items.exists():
         messages.error(request, "Your cart is empty")
         return redirect("cart")
 
@@ -84,6 +84,7 @@ def checkout(request):
         item.product.price * item.quantity
         for item in cart.items.all()
     )
+
     if request.method == "POST":
         try:
             with transaction.atomic():
@@ -96,35 +97,40 @@ def checkout(request):
                     address=request.POST.get("address"),
                     total_amount=total,
                 )
+
                 for item in cart.items.all():
                     if item.product.count < item.quantity:
-                        raise ValueError("Insufficient stock")
+                        raise ValueError(
+                            f"Insufficient stock for {item.product.name}"
+                        )
+
                     OrderItem.objects.create(
                         order=order,
                         product=item.product,
                         price=item.product.price,
                         quantity=item.quantity,
                     )
-                    # reduce stock
-                    item.product.count -= item.quantity
-                    item.product.save()
 
-                     # clear cart
+                    # Reduce stock
+                    item.product.count -= item.quantity
+                    item.product.save(update_fields=["count"])
+
+                # Clear cart
                 cart.items.all().delete()
 
             messages.success(request, "Order placed successfully!")
             return redirect("order_success")
 
-        except Exception as e:
+        except ValueError as e:
             messages.error(request, str(e))
             return redirect("checkout")
-        
+
     return render(
         request,
         "order/checkout.html",
         {
             "cart": cart,
-            "cart_total": total
+            "cart_total": total,
         }
     )
 
