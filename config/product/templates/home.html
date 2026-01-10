@@ -55,7 +55,7 @@
                 <div class="single-product-item">
                     <figure>
                         <a href="{% url 'product-details' product.slug %}">
-                            <img src="{{ product.thumbnail.url }}" alt="{{ product.title }}">
+                            <img src="{{ product.thumbnail }}" alt="{{ product.title }}">
                         </a>
                         {% if product.featured %}
                             <div class="p-status">new</div>

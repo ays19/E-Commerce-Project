@@ -57,7 +57,6 @@ def add_to_cart(request, product_id):
         cart=cart,
         product=product,
     )
-
     if not created:
         cart_item.quantity += 1
 
