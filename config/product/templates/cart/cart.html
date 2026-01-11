@@ -65,14 +65,12 @@
             </div>
 
             <div class="col-lg-6 text-right">
-                {% if cart.items.exists %}
-                <a href="{% url 'checkout' %}" class="primary-btn">
-                    Proceed to Checkout
-                </a>
-                {% else %}
-                <p>Your cart is empty.</p>
+                {% if has_items %}
+                    <a href="{% url 'checkout' %}" class="primary-btn">
+                        Proceed to Checkout
+                    </a>
                 {% endif %}
-            </div>
+            </div>  
         </div>
 
     </div>

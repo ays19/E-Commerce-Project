@@ -14,9 +14,7 @@ from .models import (
     OrderItem,
 )
 
-# -----------------------------
 # Utility: Reduce Stock Safely
-# -----------------------------
 def reduce_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
         raise ValueError("Quantity must be positive")
@@ -28,9 +26,7 @@ def reduce_stock(product: Product, quantity: int) -> None:
     product.save(update_fields=["count"])
 
 
-# -----------------------------
 # Home Page
-# -----------------------------
 class Home(ListView):
     model = Product
     template_name = "home.html"
@@ -46,9 +42,7 @@ class Home(ListView):
         return context
 
 
-# -----------------------------
 # Product Details (Phase 4)
-# -----------------------------
 class ProductDetails(DetailView):
     model = Product
     template_name = "product/product-details.html"
@@ -68,10 +62,7 @@ class ProductDetails(DetailView):
 
         return context
 
-
-# -----------------------------
 # Cart View
-# -----------------------------
 class CartView(TemplateView):
     template_name = "cart/cart.html"
 
@@ -81,15 +72,14 @@ class CartView(TemplateView):
         if self.request.user.is_authenticated:
             cart, _ = Cart.objects.get_or_create(user=self.request.user)
             context["cart"] = cart
+            context["has_items"] = cart.items.exists()
         else:
             context["cart"] = None
+            context["has_items"] = False
 
         return context
-
-
-# -----------------------------
+    
 # Add to Cart
-# -----------------------------
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -116,9 +106,7 @@ def add_to_cart(request, product_id):
     return redirect("cart")
 
 
-# -----------------------------
 # Remove from Cart
-# -----------------------------
 @login_required
 def remove_from_cart(request, item_id):
     item = get_object_or_404(
@@ -130,10 +118,7 @@ def remove_from_cart(request, item_id):
     messages.success(request, "Item removed from cart")
     return redirect("cart")
 
-
-# -----------------------------
 # Checkout
-# -----------------------------
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
@@ -188,9 +173,8 @@ def checkout(request):
             "cart_total": cart_total,
         }
     )
-# -----------------------------
+
 # Order Success
-# -----------------------------
 @login_required
 def order_success(request):
     return render(request, "order/success.html")

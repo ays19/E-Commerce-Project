@@ -1,12 +1,16 @@
-{% extends "../base.html" %}
-{% block title %} Order Success {% endblock %}
+{% extends "base.html" %}
+
+{% block title %} Order Successful {% endblock title %}
 
 {% block content %}
-<section class="checkout-section spad">
+<section class="order-success spad">
     <div class="container text-center">
         <h2>🎉 Order Placed Successfully!</h2>
-        <p>Thank you for your purchase.</p>
-        <a href="{% url 'home' %}" class="primary-btn">Continue Shopping</a>
+        <p>Thank you for shopping with Violet Store.</p>
+
+        <a href="{% url 'home' %}" class="primary-btn mt-3">
+            Continue Shopping
+        </a>
     </div>
 </section>
-{% endblock %}
+{% endblock content %}
