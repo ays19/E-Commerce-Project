@@ -3,25 +3,41 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from .models import (Product,Slider,Category,Cart,CartItem,Order,OrderItem,)
 
+from .models import (
+    Product,
+    Slider,
+    Category,
+    Cart,
+    CartItem,
+    Order,
+    OrderItem,
+)
+
+# -----------------------------
+# Utility: Reduce Stock Safely
+# -----------------------------
 def reduce_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
         raise ValueError("Quantity must be positive")
 
     if product.count < quantity:
-        raise ValueError("Insufficient stock")
+        raise ValueError(f"Insufficient stock for {product.title}")
 
     product.count -= quantity
     product.save(update_fields=["count"])
 
+
+# -----------------------------
+# Home Page
+# -----------------------------
 class Home(ListView):
     model = Product
     template_name = "home.html"
     context_object_name = "products"
 
     def get_queryset(self):
-        return Product.objects.filter(featured=True, count__gt=0)
+        return Product.objects.filter(count__gt=0)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -29,6 +45,10 @@ class Home(ListView):
         context["categories"] = Category.objects.all()
         return context
 
+
+# -----------------------------
+# Product Details (Phase 4)
+# -----------------------------
 class ProductDetails(DetailView):
     model = Product
     template_name = "product/product-details.html"
@@ -36,6 +56,22 @@ class ProductDetails(DetailView):
     slug_field = "slug"
     slug_url_kwarg = "slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = self.object
+
+        # Related products (same category)
+        context["related_products"] = Product.objects.filter(
+            category=product.category,
+            count__gt=0
+        ).exclude(id=product.id)[:4]
+
+        return context
+
+
+# -----------------------------
+# Cart View
+# -----------------------------
 class CartView(TemplateView):
     template_name = "cart/cart.html"
 
@@ -47,30 +83,57 @@ class CartView(TemplateView):
             context["cart"] = cart
         else:
             context["cart"] = None
+
         return context
-    
+
+
+# -----------------------------
+# Add to Cart
+# -----------------------------
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
+    if product.count <= 0:
+        messages.error(request, "Product is out of stock")
+        return redirect("product-details", slug=product.slug)
+
     cart, _ = Cart.objects.get_or_create(user=request.user)
+
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
     )
+
     if not created:
+        if cart_item.quantity + 1 > product.count:
+            messages.error(request, "Not enough stock available")
+            return redirect("cart")
         cart_item.quantity += 1
 
     cart_item.save()
     messages.success(request, "Product added to cart")
-    return redirect('cart')
-    
+    return redirect("cart")
+
+
+# -----------------------------
+# Remove from Cart
+# -----------------------------
 @login_required
 def remove_from_cart(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item = get_object_or_404(
+        CartItem,
+        id=item_id,
+        cart__user=request.user
+    )
     item.delete()
     messages.success(request, "Item removed from cart")
     return redirect("cart")
 
+
+# -----------------------------
+# Checkout
+# -----------------------------
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
@@ -79,7 +142,7 @@ def checkout(request):
         messages.error(request, "Your cart is empty")
         return redirect("cart")
 
-    total = sum(
+    cart_total = sum(
         item.product.price * item.quantity
         for item in cart.items.all()
     )
@@ -94,14 +157,11 @@ def checkout(request):
                     email=request.POST.get("email"),
                     phone=request.POST.get("phone"),
                     address=request.POST.get("address"),
-                    total_amount=total,
+                    total_amount=cart_total,
                 )
 
                 for item in cart.items.all():
-                    if item.product.count < item.quantity:
-                        raise ValueError(
-                            f"Insufficient stock for {item.product.name}"
-                        )
+                    reduce_stock(item.product, item.quantity)
 
                     OrderItem.objects.create(
                         order=order,
@@ -109,10 +169,6 @@ def checkout(request):
                         price=item.product.price,
                         quantity=item.quantity,
                     )
-
-                    # Reduce stock
-                    item.product.count -= item.quantity
-                    item.product.save(update_fields=["count"])
 
                 # Clear cart
                 cart.items.all().delete()
@@ -129,11 +185,12 @@ def checkout(request):
         "order/checkout.html",
         {
             "cart": cart,
-            "cart_total": total,
+            "cart_total": cart_total,
         }
     )
-
+# -----------------------------
+# Order Success
+# -----------------------------
 @login_required
 def order_success(request):
     return render(request, "order/success.html")
-
