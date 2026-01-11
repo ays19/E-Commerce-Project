@@ -1,7 +1,34 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} About Us {% endblock title %}
+
 {% block content %}
-<section class="spad container">
-    <h2>About Us</h2>
-    <p>Professional company description here.</p>
+<section class="about-section spad">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2>About Violet Store</h2>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <img src="{% static 'img/about.jpg' %}" class="img-fluid" alt="About Us">
+            </div>
+
+            <div class="col-lg-6">
+                <p>
+                    Violet Store is a modern e-commerce platform offering
+                    high-quality fashion products at affordable prices.
+                </p>
+                <p>
+                    We focus on customer satisfaction, fast delivery,
+                    and premium product experience.
+                </p>
+                <p>
+                    Built with Django following industry best practices.
+                </p>
+            </div>
+        </div>
+    </div>
 </section>
-{% endblock %}
+{% endblock content %}

@@ -1,7 +1,36 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} Contact Us {% endblock title %}
+
 {% block content %}
-<section class="spad container">
-    <h2>About Us</h2>
-    <p>Professional company description here.</p>
+<section class="contact-section spad">
+    <div class="container">
+
+        <div class="section-title text-center">
+            <h2>Contact Us</h2>
+            <p>We’d love to hear from you</p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <form class="contact-form">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <textarea placeholder="Your Message"></textarea>
+                    <button class="site-btn">Send Message</button>
+                </form>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="contact-info">
+                    <p><strong>Address:</strong> Dhaka, Bangladesh</p>
+                    <p><strong>Email:</strong> support@violetstore.com</p>
+                    <p><strong>Phone:</strong> +880 1234 567890</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </section>
-{% endblock %}
+{% endblock content %}
