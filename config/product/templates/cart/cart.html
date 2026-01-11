@@ -65,8 +65,8 @@
             </div>
 
             <div class="col-lg-6 text-right">
-                {% if cart.items.exists %}
-                <a href="{% url 'checkout' %}" class="primary-btn chechout-btn">
+                {% if cart and cart.items.count > 0 %}
+                <a href="{% url 'checkout' %}" class="primary-btn">
                     Proceed to Checkout
                 </a>
                 {% endif %}
