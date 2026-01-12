@@ -4,10 +4,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 
+from config.product.views import checkout
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('product.urls')),
     path('', include('user_account.urls')),
+    path("", include("pages.urls")),
+    path("checkout/", checkout, name="checkout"),
+
 ]
 
 if settings.DEBUG:

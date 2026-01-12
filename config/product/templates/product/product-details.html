@@ -1,4 +1,4 @@
-{% extends '../base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %} {{ product.title }} {% endblock title %}
@@ -6,24 +6,25 @@
 {% block content %}
 
 <!-- Product Page Section Begin -->
-<section class="product-page">
+<section class="product-page spad">
     <div class="container">
 
-        <div class="product-control">
-            <a href="#">Previous</a>
-            <a href="#">Next</a>
+        <!-- Navigation -->
+        <div class="product-control mb-4">
+            <a href="{% url 'home' %}">Home</a> /
+            <a href="#">{{ product.category.title }}</a>
         </div>
 
         <div class="row">
 
-            <!-- Product Images -->
+            <!-- Product Image -->
             <div class="col-lg-6">
-                <div class="product-slider owl-carousel">
+                <div class="product-slider">
                     <div class="product-img">
                         <figure>
-                            <img src="{{ product.thumbnail }}" alt="{{ product.title }}">
+                            <img src="{{ product.thumbnail.url }}" alt="{{ product.title }}">
                             {% if product.featured %}
-                                <div class="p-status">featured</div>
+                                <div class="p-status">Featured</div>
                             {% endif %}
                         </figure>
                     </div>
@@ -37,52 +38,60 @@
                     <h2>{{ product.title }}</h2>
 
                     <div class="pc-meta">
-                        <h5>${{ product.price }}</h5>
+                        <h5>৳ {{ product.price }}</h5>
                         <div class="rating">
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
                         </div>
                     </div>
 
-                    <p>
+                    <p class="mb-4">
                         {{ product.description }}
                     </p>
 
-                    <ul class="tags">
+                    <!-- Product Meta -->
+                    <ul class="tags mb-4">
                         <li>
                             <span>Category :</span> {{ product.category.title }}
                         </li>
                         <li>
-                            <span>Stock :</span>
+                            <span>Availability :</span>
                             {% if product.count > 0 %}
-                                {{ product.count }} available
+                                <span class="text-success">
+                                    {{ product.count }} in stock
+                                </span>
                             {% else %}
-                                Out of stock
+                                <span class="text-danger">
+                                    Out of stock
+                                </span>
                             {% endif %}
                         </li>
                     </ul>
 
-                    <div class="product-quantity">
+                    <!-- Quantity (UI only – backend later) -->
+                    <div class="product-quantity mb-4">
                         <div class="pro-qty">
                             <input type="text" value="1" readonly>
                         </div>
                     </div>
 
+                    <!-- Add to Cart -->
                     {% if product.count > 0 %}
                         <a href="{% url 'add_to_cart' product.id %}" class="primary-btn pc-btn">
                             Add to Cart
                         </a>
                     {% else %}
-                        <span class="primary-btn pc-btn disabled">
+                        <button class="primary-btn pc-btn disabled" disabled>
                             Out of Stock
-                        </span>
+                        </button>
                     {% endif %}
 
-                    <ul class="p-info">
-                        <li>Product Information</li>
+                    <!-- Extra Info Tabs (UI Ready) -->
+                    <ul class="p-info mt-5">
+                        <li class="active">Product Information</li>
                         <li>Reviews</li>
                         <li>Product Care</li>
                     </ul>
@@ -95,7 +104,7 @@
 </section>
 <!-- Product Page Section End -->
 
-<!-- Related Products (Static for now) -->
+<!-- Related Products -->
 <section class="related-product spad">
     <div class="container">
 
@@ -108,60 +117,27 @@
         </div>
 
         <div class="row">
-
+            {% for related in related_products %}
             <div class="col-lg-3 col-sm-6">
                 <div class="single-product-item">
                     <figure>
-                        <img src="{% static 'img/products/img-1_1.jpg' %}" alt="">
-                        <div class="p-status">new</div>
+                        <a href="{% url 'product-details' related.slug %}">
+                            <img src="{{ related.thumbnail.url }}" alt="{{ related.title }}">
+                        </a>
                     </figure>
                     <div class="product-text">
-                        <h6>Sample Product</h6>
-                        <p>$29.99</p>
+                        <h6>{{ related.title }}</h6>
+                        <p>৳ {{ related.price }}</p>
                     </div>
                 </div>
             </div>
-
-            <div class="col-lg-3 col-sm-6">
-                <div class="single-product-item">
-                    <figure>
-                        <img src="{% static 'img/products/img-2_1.jpg' %}" alt="">
-                        <div class="p-status sale">sale</div>
-                    </figure>
-                    <div class="product-text">
-                        <h6>Sample Product</h6>
-                        <p>$39.99</p>
-                    </div>
-                </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No related products found.</p>
             </div>
-
-            <div class="col-lg-3 col-sm-6">
-                <div class="single-product-item">
-                    <figure>
-                        <img src="{% static 'img/products/img-3_1.jpg' %}" alt="">
-                        <div class="p-status">new</div>
-                    </figure>
-                    <div class="product-text">
-                        <h6>Sample Product</h6>
-                        <p>$19.99</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-sm-6">
-                <div class="single-product-item">
-                    <figure>
-                        <img src="{% static 'img/products/img-4_1.jpg' %}" alt="">
-                        <div class="p-status popular">popular</div>
-                    </figure>
-                    <div class="product-text">
-                        <h6>Sample Product</h6>
-                        <p>$49.99</p>
-                    </div>
-                </div>
-            </div>
-
+            {% endfor %}
         </div>
+
     </div>
 </section>
 <!-- Related Product Section End -->
