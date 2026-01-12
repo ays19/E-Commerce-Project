@@ -58,20 +58,28 @@
         </div>
 
         <div class="row mt-4">
-            <div class="col-lg-6">
-                <a href="{% url 'home' %}" class="primary-btn">
-                    Continue Shopping
-                </a>
-            </div>
+    <div class="col-lg-6">
+        <a href="{% url 'home' %}" class="primary-btn">
+            Continue Shopping
+        </a>
+    </div>
 
-            <div class="col-lg-6 text-right">
-                {% if has_items %}
-                    <a href="{% url 'checkout' %}" class="primary-btn">
-                        Proceed to Checkout
-                    </a>
-                {% endif %}
-            </div>  
-        </div>
+    <div class="col-lg-6 text-right">
+
+        {% if not user.is_authenticated %}
+            <p class="text-center mt-3">
+                Please <a href="{% url 'login' %}">login</a> to checkout.
+            </p>
+
+        {% elif cart and cart.items.exists %}
+            <a href="{% url 'checkout' %}" class="primary-btn">
+                Proceed to Checkout
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+
 
     </div>
 </section>
