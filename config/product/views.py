@@ -42,7 +42,7 @@ class Home(ListView):
         return context
 
 
-# Product Details (Phase 4)
+# Product Details Page
 class ProductDetails(DetailView):
     model = Product
     template_name = "product/product-details.html"
@@ -118,16 +118,15 @@ def remove_from_cart(request, item_id):
     messages.success(request, "Item removed from cart")
     return redirect("cart")
 
-# Checkout
 @login_required
 def checkout(request):
-    cart = get_object_or_404(Cart, user=request.user)
+    cart = Cart.objects.filter(user=request.user).first()
 
-    if not cart.items.exists():
+    if not cart or not cart.items.exists():
         messages.error(request, "Your cart is empty")
         return redirect("cart")
 
-    cart_total = sum(
+    total = sum(
         item.product.price * item.quantity
         for item in cart.items.all()
     )
@@ -142,11 +141,14 @@ def checkout(request):
                     email=request.POST.get("email"),
                     phone=request.POST.get("phone"),
                     address=request.POST.get("address"),
-                    total_amount=cart_total,
+                    total_amount=total,
                 )
 
                 for item in cart.items.all():
-                    reduce_stock(item.product, item.quantity)
+                    if item.product.count < item.quantity:
+                        raise ValueError(
+                            f"Insufficient stock for {item.product.title}"
+                        )
 
                     OrderItem.objects.create(
                         order=order,
@@ -155,13 +157,15 @@ def checkout(request):
                         quantity=item.quantity,
                     )
 
-                # Clear cart
+                    item.product.count -= item.quantity
+                    item.product.save(update_fields=["count"])
+
                 cart.items.all().delete()
 
             messages.success(request, "Order placed successfully!")
             return redirect("order_success")
 
-        except ValueError as e:
+        except Exception as e:
             messages.error(request, str(e))
             return redirect("checkout")
 
@@ -170,7 +174,7 @@ def checkout(request):
         "order/checkout.html",
         {
             "cart": cart,
-            "cart_total": cart_total,
+            "cart_total": total,
         }
     )
 
