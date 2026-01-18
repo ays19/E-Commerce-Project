@@ -7,7 +7,7 @@
             <!-- Logo -->
             <div class="logo">
                 <a href="{% url 'home' %}">
-                    <img src="{% static 'img/logo.png' %}" alt="Violet Store">
+                    <img src="{% static 'img/logo.png' %}" alt="Sharar Store">
                 </a>
             </div>
 
@@ -19,10 +19,11 @@
                     <img src="{% static 'img/icons/man.png' %}" alt="User">
                 {% endif %}
 
+                <!-- Cart Icon -->
                 <a href="{% url 'cart' %}">
                     <img src="{% static 'img/icons/bag.png' %}" alt="Cart">
                     <span>
-                        {% if cart and cart.items.exists %}
+                        {% if cart %}
                             {{ cart.items.count }}
                         {% else %}
                             0
@@ -44,7 +45,7 @@
             <!-- Navigation -->
             <nav class="main-menu mobile-menu">
                 <ul>
-                    <li class="active">
+                    <li class="{% if request.path == '/' %}active{% endif %}">
                         <a href="{% url 'home' %}">Home</a>
                     </li>
 
@@ -52,7 +53,13 @@
                         <a href="#">Shop</a>
                         <ul class="sub-menu">
                             <li><a href="{% url 'cart' %}">Shopping Cart</a></li>
-                            <li><a href="{% url 'checkout' %}">Check out</a></li>
+
+                            {% if user.is_authenticated %}
+                                <li><a href="{% url 'checkout' %}">Checkout</a></li>
+                                <li><a href="{% url 'orders' %}">My Orders</a></li>
+                            {% else %}
+                                <li><a href="{% url 'login' %}">Login to Checkout</a></li>
+                            {% endif %}
                         </ul>
                     </li>
 
@@ -74,21 +81,21 @@
             <div class="col-md-4">
                 <div class="header-item">
                     <img src="{% static 'img/icons/delivery.png' %}" alt="">
-                    <p>Free shipping on orders over $30</p>
+                    <p>Free shipping on orders over ৳3000</p>
                 </div>
             </div>
 
             <div class="col-md-4 text-left text-lg-center">
                 <div class="header-item">
                     <img src="{% static 'img/icons/voucher.png' %}" alt="">
-                    <p>20% Student Discount</p>
+                    <p>Student Discount Available</p>
                 </div>
             </div>
 
             <div class="col-md-4 text-left text-xl-right">
                 <div class="header-item">
                     <img src="{% static 'img/icons/sales.png' %}" alt="">
-                    <p>30% off on dresses. Use code: 30OFF</p>
+                    <p>Seasonal Offers Available</p>
                 </div>
             </div>
 
