@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView, TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db import transaction
 
@@ -183,3 +184,21 @@ def checkout(request):
 @login_required
 def order_success(request):
     return render(request, "order/success.html")
+
+class MyOrdersView(LoginRequiredMixin, ListView):
+    model = Order
+    template_name = "order/orders.html"
+    context_object_name = "orders"
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class OrderDetailView(LoginRequiredMixin, DetailView):
+    model = Order
+    template_name = "order/order_detail.html"
+    context_object_name = "order"
+
+    def get_queryset(self):
+        # Security: user can only see their own orders
+        return Order.objects.filter(user=self.request.user)
