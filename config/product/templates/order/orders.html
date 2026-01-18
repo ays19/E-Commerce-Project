@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %} My Orders {% endblock title %}
+
+{% block content %}
+<section class="checkout-section spad">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2>My Orders</h2>
+        </div>
+
+        {% if orders %}
+            <div class="cart-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                            <td>৳ {{ order.total_amount|floatformat:2 }}</td>
+                            <td>Placed</td>
+                            <td>
+                                <a href="{% url 'order_detail' order.id %}" class="primary-btn">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p>You have no orders yet.</p>
+                <a href="{% url 'home' %}" class="primary-btn">Shop Now</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock content %}
