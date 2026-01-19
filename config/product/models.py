@@ -31,8 +31,20 @@ class Product(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ["-id"]
+        indexes = [
+            models.Index(fields=["slug"]),
+            models.Index(fields=["featured"]),
+            models.Index(fields=["count"]),
+        ]
+
     def __str__(self):
         return self.title
+
+    @property
+    def is_in_stock(self) -> bool:
+        return self.count > 0
 
 
 class Cart(models.Model):
@@ -44,6 +56,9 @@ class Cart(models.Model):
         blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-id"]
 
     def __str__(self):
         return f"Cart {self.id}"
@@ -67,8 +82,21 @@ class CartItem(models.Model):
 
     def __str__(self):
         return self.product.title
-    
+
+    @property
+    def line_total(self):
+        return self.product.price * self.quantity
+
+
 class Order(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("shipped", "Shipped"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
@@ -79,16 +107,36 @@ class Order(models.Model):
     phone = models.CharField(max_length=20)
     address = models.TextField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True
+    )
+
     is_paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["created_at"]),
+        ]
 
     def __str__(self):
         return f"Order #{self.id}"
 
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
-        related_name='items',
+        related_name="items",
         on_delete=models.CASCADE
     )
     product = models.ForeignKey(
@@ -98,8 +146,16 @@ class OrderItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
+    class Meta:
+        ordering = ["-id"]
+        unique_together = ("order", "product")
+
     def __str__(self):
         return self.product.title
+
+    @property
+    def line_total(self):
+        return self.price * self.quantity
 
 
 class Slider(models.Model):
@@ -107,6 +163,9 @@ class Slider(models.Model):
     banner = models.ImageField(upload_to="banners/")
     show = models.BooleanField(default=True)
     created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-id"]
 
     def __str__(self):
         return self.title
