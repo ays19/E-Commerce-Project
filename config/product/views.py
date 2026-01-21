@@ -202,3 +202,13 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         # Security: user can only see their own orders
         return Order.objects.filter(user=self.request.user)
+
+@login_required
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "order/my_orders.html", {"orders": orders})
+
+@login_required
+def order_detail(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user)
+    return render(request, "order/order_detail.html", {"order": order})

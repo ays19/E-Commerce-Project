@@ -4,6 +4,7 @@ from .views import (
     ProductDetails,
     CartView,
     add_to_cart,
+    my_orders,
     remove_from_cart,
     checkout,
     order_success,
@@ -20,4 +21,6 @@ urlpatterns = [
     path("order-success/", order_success, name="order_success"),
     path("orders/", MyOrdersView.as_view(), name="orders"),
     path("orders/<int:pk>/", OrderDetailView.as_view(), name="order_detail"),
+    path("my-orders/", my_orders, name="my_orders"),
+
 ]
