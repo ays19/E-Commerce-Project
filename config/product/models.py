@@ -108,6 +108,11 @@ class Order(models.Model):
     address = models.TextField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
+    payment_method = models.CharField(
+        max_length=20,
+        choices=[("cod", "Cash on Delivery"), ("card", "Card"), ("bkash", "Bkash")],
+        default="cod"
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -117,18 +122,7 @@ class Order(models.Model):
 
     is_paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    PAYMENT_CHOICES = (
-    ("cod", "Cash on Delivery"),
-    ("card", "Card (Mock)"),
-    ("bkash", "bKash (Mock)"),
-)
-    payment_method = models.CharField(
-    max_length=20,
-    choices=PAYMENT_CHOICES,
-    default="cod"
-)
-
+    
     class Meta:
         ordering = ["-created_at"]
         indexes = [
