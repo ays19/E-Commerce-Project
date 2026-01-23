@@ -6,7 +6,6 @@ from django.contrib import messages
 from django.db import transaction
 from django.views.decorators.http import require_GET
 
-
 from .models import (
     Product,
     Slider,
@@ -17,7 +16,8 @@ from .models import (
     OrderItem,
 )
 
-# Utility: Reduce Stock Safely
+
+# -------- Utilities --------
 def reduce_stock(product: Product, quantity: int) -> None:
     if quantity <= 0:
         raise ValueError("Quantity must be positive")
@@ -29,14 +29,14 @@ def reduce_stock(product: Product, quantity: int) -> None:
     product.save(update_fields=["count"])
 
 
-# Home Page
+# -------- Pages --------
 class Home(ListView):
     model = Product
     template_name = "home.html"
     context_object_name = "products"
 
     def get_queryset(self):
-        return Product.objects.filter(count__gt=0)
+        return Product.objects.filter(count__gt=0).order_by("-id")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -45,7 +45,6 @@ class Home(ListView):
         return context
 
 
-# Product Details Page
 class ProductDetails(DetailView):
     model = Product
     template_name = "product/product-details.html"
@@ -56,46 +55,40 @@ class ProductDetails(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.object
-
-        # Related products (same category)
-        context["related_products"] = Product.objects.filter(
-            category=product.category,
-            count__gt=0
-        ).exclude(id=product.id)[:4]
-
+        context["related_products"] = (
+            Product.objects.filter(category=product.category, count__gt=0)
+            .exclude(id=product.id)[:4]
+        )
         return context
 
-# Cart View
-class CartView(TemplateView):
+
+# -------- Cart --------
+class CartView(LoginRequiredMixin, TemplateView):
     template_name = "cart/cart.html"
+    login_url = "login"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        if self.request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(user=self.request.user)
-            context["cart"] = cart
-            context["has_items"] = cart.items.exists()
-        else:
-            context["cart"] = None
-            context["has_items"] = False
-
+        cart, _ = Cart.objects.get_or_create(user=self.request.user)
+        context["cart"] = cart
+        context["has_items"] = cart.items.exists()
         return context
-    
-# Add to Cart
+
+
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
     if product.count <= 0:
         messages.error(request, "Product is out of stock")
-        return redirect("product-details", slug=product.slug)
+        return redirect("product_detail", slug=product.slug)
 
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
     cart_item, created = CartItem.objects.get_or_create(
         cart=cart,
         product=product,
+        defaults={"quantity": 1},
     )
 
     if not created:
@@ -103,25 +96,21 @@ def add_to_cart(request, product_id):
             messages.error(request, "Not enough stock available")
             return redirect("cart")
         cart_item.quantity += 1
+        cart_item.save(update_fields=["quantity"])
 
-    cart_item.save()
     messages.success(request, "Product added to cart")
     return redirect("cart")
 
 
-# Remove from Cart
 @login_required
 def remove_from_cart(request, item_id):
-    item = get_object_or_404(
-        CartItem,
-        id=item_id,
-        cart__user=request.user
-    )
+    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     item.delete()
     messages.success(request, "Item removed from cart")
     return redirect("cart")
 
-#Checkout
+
+# -------- Checkout & Payment --------
 @login_required
 def checkout(request):
     cart = Cart.objects.filter(user=request.user).first()
@@ -130,35 +119,33 @@ def checkout(request):
         messages.error(request, "Your cart is empty")
         return redirect("cart")
 
-    total = sum(
-        item.product.price * item.quantity
-        for item in cart.items.all()
-    )
+    cart_total = sum(item.product.price * item.quantity for item in cart.items.all())
 
     if request.method == "POST":
         try:
             with transaction.atomic():
                 payment_method = request.POST.get("payment_method", "cod")
+
                 order = Order.objects.create(
                     user=request.user,
-                    first_name=request.POST.get("first_name"),
-                    last_name=request.POST.get("last_name"),
-                    email=request.POST.get("email"),
-                    phone=request.POST.get("phone"),
-                    address=request.POST.get("address"),
-                    total_amount=total,
+                    first_name=request.POST.get("first_name", "").strip(),
+                    last_name=request.POST.get("last_name", "").strip(),
+                    email=request.POST.get("email", "").strip(),
+                    phone=request.POST.get("phone", "").strip(),
+                    address=request.POST.get("address", "").strip(),
+                    total_amount=cart_total,
                     payment_method=payment_method,
                 )
+
+                # Paid methods (mock) -> paid + processing
                 if payment_method in ["card", "bkash"]:
                     order.is_paid = True
                     order.status = "processing"
                     order.save(update_fields=["is_paid", "status"])
 
-                for item in cart.items.all():
-                    if item.product.count < item.quantity:
-                        raise ValueError(
-                            f"Insufficient stock for {item.product.title}"
-                        )
+                # Create order items + reduce stock
+                for item in cart.items.select_related("product"):
+                    reduce_stock(item.product, item.quantity)
 
                     OrderItem.objects.create(
                         order=order,
@@ -166,13 +153,15 @@ def checkout(request):
                         price=item.product.price,
                         quantity=item.quantity,
                     )
-                    # Reduce stock
-                    item.product.count -= item.quantity
-                    item.product.save(update_fields=["count"])
 
+                # Clear cart
                 cart.items.all().delete()
 
             messages.success(request, "Order placed successfully!")
+
+            if order.is_paid:
+                return redirect("payment_success", order_id=order.id)
+
             return redirect("order_success")
 
         except Exception as e:
@@ -182,21 +171,28 @@ def checkout(request):
     return render(
         request,
         "order/checkout.html",
-        {
-            "cart": cart,
-            "cart_total": total,
-        }
+        {"cart": cart, "cart_total": cart_total},
     )
 
-# Order Success
+
 @login_required
 def order_success(request):
     return render(request, "order/success.html")
 
+
+@login_required
+@require_GET
+def payment_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, "order/payment_success.html", {"order": order})
+
+
+# -------- Orders (User) --------
 class MyOrdersView(LoginRequiredMixin, ListView):
     model = Order
     template_name = "order/orders.html"
     context_object_name = "orders"
+    login_url = "login"
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by("-created_at")
@@ -206,23 +202,7 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     model = Order
     template_name = "order/order_detail.html"
     context_object_name = "order"
+    login_url = "login"
 
     def get_queryset(self):
-        # Security: user can only see their own orders
         return Order.objects.filter(user=self.request.user)
-
-@login_required
-def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "order/my_orders.html", {"orders": orders})
-
-@login_required
-def order_detail(request, pk):
-    order = get_object_or_404(Order, pk=pk, user=request.user)
-    return render(request, "order/order_detail.html", {"order": order})
-
-@login_required
-@require_GET
-def payment_success(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, "order/payment_success.html", {"order": order})
