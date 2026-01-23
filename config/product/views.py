@@ -214,19 +214,12 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
 def cancel_order(request, pk):
     order = get_object_or_404(Order, pk=pk, user=request.user)
 
-    # If already paid or completed, you might block cancel
-    if getattr(order, "status", None) in ["completed", "cancelled"]:
-        messages.error(request, "This order cannot be cancelled.")
-        return redirect("order_detail", pk=order.pk)
+    if order.status != "pending":
+        messages.error(request, "You cannot cancel this order")
+        return redirect("product:order_detail", pk=pk)
 
-    # Mark cancelled
-    if hasattr(order, "status"):
-        order.status = "cancelled"
-        order.save(update_fields=["status"])
-    else:
-        # fallback if you don't have status field
-        order.is_paid = False
-        order.save(update_fields=["is_paid"])
+    order.status = "cancelled"
+    order.save(update_fields=["status"])
 
-    messages.success(request, "Order cancelled successfully.")
-    return redirect("orders")
+    messages.success(request, "Order cancelled successfully")
+    return redirect("product:orders")
