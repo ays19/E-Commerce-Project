@@ -1,14 +1,12 @@
 from django.contrib import admin
 from .models import Category, Product, Slider, Cart, CartItem, Order, OrderItem
 
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("title", "featured", "created_date")
     prepopulated_fields = {"slug": ("title",)}
     search_fields = ("title",)
     list_filter = ("featured",)
-
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -19,19 +17,16 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ("price", "count", "featured")
     ordering = ("-id",)
 
-
 @admin.register(Slider)
 class SliderAdmin(admin.ModelAdmin):
     list_display = ("title", "show", "created_date")
     list_filter = ("show",)
     search_fields = ("title",)
 
-
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
     readonly_fields = ("product", "price", "quantity")
-
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -41,13 +36,11 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
     readonly_fields = ("total_amount", "created_at")
 
-
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "created_at")
     search_fields = ("user__username",)
     readonly_fields = ("created_at",)
-
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):

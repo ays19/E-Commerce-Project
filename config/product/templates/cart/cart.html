@@ -59,14 +59,14 @@
 
         <div class="row mt-4">
             <div class="col-lg-6">
-                <a href="{% url 'home' %}" class="primary-btn">
+                <a href="{% url 'product:home' %}" class="primary-btn">
                     Continue Shopping
                 </a>
             </div>
 
             <div class="col-lg-6 text-right">
                 {% if cart.items.exists %}
-                <a href="{% url 'checkout' %}" class="primary-btn chechout-btn">
+                <a href="{% url 'product:checkout' %}" class="primary-btn chechout-btn">
                     Proceed to Checkout
                 </a>
                 {% endif %}
