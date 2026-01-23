@@ -118,6 +118,17 @@ class Order(models.Model):
     is_paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    PAYMENT_CHOICES = (
+    ("cod", "Cash on Delivery"),
+    ("card", "Card (Mock)"),
+    ("bkash", "bKash (Mock)"),
+)
+    payment_method = models.CharField(
+    max_length=20,
+    choices=PAYMENT_CHOICES,
+    default="cod"
+)
+
     class Meta:
         ordering = ["-created_at"]
         indexes = [
