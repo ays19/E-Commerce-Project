@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Payment Success{% endblock %}
+
+{% block content %}
+<section class="checkout-section spad">
+  <div class="container text-center">
+    <h2>✅ Payment Successful</h2>
+    <p>Order #{{ order.id }} confirmed.</p>
+
+    <p>
+      <strong>Method:</strong> {{ order.get_payment_method_display }} <br>
+      <strong>Status:</strong> {{ order.get_status_display }} <br>
+      <strong>Total:</strong> ৳ {{ order.total_amount|floatformat:2 }}
+    </p>
+
+    <a href="{% url 'orders' %}" class="primary-btn">Go to My Orders</a>
+  </div>
+</section>
+{% endblock %}

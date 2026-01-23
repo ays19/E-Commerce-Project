@@ -81,6 +81,7 @@ def add_to_cart(request, product_id):
 
     if product.count <= 0:
         messages.error(request, "Product is out of stock")
+        # ✅ url name must match urls.py (if you use product_detail)
         return redirect("product_detail", slug=product.slug)
 
     cart, _ = Cart.objects.get_or_create(user=request.user)
@@ -159,6 +160,7 @@ def checkout(request):
 
             messages.success(request, "Order placed successfully!")
 
+            # ✅ redirect based on payment status
             if order.is_paid:
                 return redirect("payment_success", order_id=order.id)
 
@@ -205,4 +207,26 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     login_url = "login"
 
     def get_queryset(self):
+        # Security: user can only see their own orders
         return Order.objects.filter(user=self.request.user)
+
+@login_required
+def cancel_order(request, pk):
+    order = get_object_or_404(Order, pk=pk, user=request.user)
+
+    # If already paid or completed, you might block cancel
+    if getattr(order, "status", None) in ["completed", "cancelled"]:
+        messages.error(request, "This order cannot be cancelled.")
+        return redirect("order_detail", pk=order.pk)
+
+    # Mark cancelled
+    if hasattr(order, "status"):
+        order.status = "cancelled"
+        order.save(update_fields=["status"])
+    else:
+        # fallback if you don't have status field
+        order.is_paid = False
+        order.save(update_fields=["is_paid"])
+
+    messages.success(request, "Order cancelled successfully.")
+    return redirect("orders")
