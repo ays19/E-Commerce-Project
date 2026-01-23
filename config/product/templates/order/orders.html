@@ -4,6 +4,7 @@
 {% block content %}
 <section class="checkout-section spad">
     <div class="container">
+
         <div class="section-title text-center">
             <h2>My Orders</h2>
         </div>
@@ -17,32 +18,52 @@
                             <th>Date</th>
                             <th>Total</th>
                             <th>Status</th>
-                            <th></th>
+                            <th class="text-right">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {% for order in orders %}
                         <tr>
                             <td>#{{ order.id }}</td>
                             <td>{{ order.created_at|date:"M d, Y" }}</td>
                             <td>৳ {{ order.total_amount|floatformat:2 }}</td>
-                            <td>Placed</td>
+
                             <td>
-                                <a href="{% url 'order_detail' order.id %}" class="primary-btn">
+                                <strong>{{ order.get_status_display }}</strong>
+                                {% if order.is_paid %}
+                                    <small class="d-block">Paid</small>
+                                {% else %}
+                                    <small class="d-block">Unpaid</small>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-right">
+                                <a href="{% url 'product:order_detail' order.id %}" class="primary-btn">
                                     View
                                 </a>
+
+                                {% if order.status == "pending" %}
+                                    <a href="{% url 'product:cancel_order' order.id %}"
+                                       class="primary-btn"
+                                       style="background:#dc3545; border-color:#dc3545; margin-left:8px;">
+                                        Cancel
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
         {% else %}
             <div class="text-center">
                 <p>You have no orders yet.</p>
-                <a href="{% url 'home' %}" class="primary-btn">Shop Now</a>
+                <a href="{% url 'product:home' %}" class="primary-btn">Shop Now</a>
             </div>
         {% endif %}
+
     </div>
 </section>
 {% endblock content %}
