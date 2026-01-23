@@ -77,16 +77,6 @@
 
             <div class="col-lg-6 text-lg-right">
                 <h4>Total: ৳ {{ order.total_amount|floatformat:2 }}</h4>
-
-                <!-- Phase 9.1 optional: cancel button -->
-                {% if order.status != "cancelled" and order.status != "completed" and order.status != "shipped" %}
-                    <form method="post" action="{% url 'cancel_order' order.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="primary-btn" style="border:none;">
-                            Cancel Order
-                        </button>
-                    </form>
-                {% endif %}
             </div>
         </div>
 
