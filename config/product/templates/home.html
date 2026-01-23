@@ -14,15 +14,15 @@
                         <img src="{% static 'img/icons/f-delivery.png' %}" alt="">
                         <h4>Free shipping</h4>
                         <p>Fusce urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal
-                            esuada aliquet libero viverra cursus. </p>
+                            esuada aliquet libero viverra cursus.</p>
                     </div>
                 </div>
                 <div class="col-lg-4">
                     <div class="single-features-ads second">
                         <img src="{% static 'img/icons/coin.png' %}" alt="">
-                        <h4>100% Money back </h4>
+                        <h4>100% Money back</h4>
                         <p>Urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal esuada
-                            aliquet libero viverra cursus. </p>
+                            aliquet libero viverra cursus.</p>
                     </div>
                 </div>
                 <div class="col-lg-4">
@@ -30,13 +30,14 @@
                         <img src="{% static 'img/icons/chat.png' %}" alt="">
                         <h4>Online support 24/7</h4>
                         <p>Urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal esuada
-                            aliquet libero viverra cursus. </p>
+                            aliquet libero viverra cursus.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
 <section class="latest-products spad">
     <div class="container">
         <div class="product-filter">
@@ -54,13 +55,17 @@
             <div class="col-lg-3 col-sm-6 mix all {{ product.category.slug }}">
                 <div class="single-product-item">
                     <figure>
-                        <a href="{% url 'product-details' product.slug %}">
+                        <a href="{% url 'product:product_detail' product.slug %}">
                             <img src="{{ product.thumbnail }}" alt="{{ product.title }}">
                         </a>
-                        {% if product.featured %}
+
+                        {% if product.count == 0 %}
+                            <div class="p-status sale">out</div>
+                        {% elif product.featured %}
                             <div class="p-status">new</div>
                         {% endif %}
                     </figure>
+
                     <div class="product-text">
                         <h6>{{ product.title }}</h6>
                         <p>৳ {{ product.price }}</p>
@@ -73,8 +78,9 @@
             </div>
             {% endfor %}
         </div>
-        </div>
+    </div>
 </section>
+
 <section class="lookbok-section">
     <div class="container-fluid">
         <div class="row">
@@ -85,10 +91,7 @@
                     </div>
                     <p>Fusce urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum malesuada
                         aliquet libero viverra cursus. Aliquam nec varius enim. Phasellus ac sed lectus. Nam leo
-                        perget, congue pretium tellus. Nullam quis libero sem. Phasellus ac lectus.
-                        Aenean non felis dapibus, placerat libero auctor, ornare ante. Morbi quis ex eleifend,
-                        sodales nulla vitae, scelerisque ante. Nunc id vulputate dui. Suspendisse consectetur rutrum
-                        metus nec scelerisque. s</p>
+                        perget, congue pretium tellus.</p>
                     <a href="#" class="primary-btn look-btn">See More</a>
                 </div>
             </div>
@@ -101,6 +104,7 @@
         </div>
     </div>
 </section>
+
 <div class="logo-section spad">
     <div class="logo-items owl-carousel">
         <div class="logo-item">
