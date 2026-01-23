@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db import transaction
+from django.views.decorators.http import require_GET
+
 
 from .models import (
     Product,
@@ -136,6 +138,7 @@ def checkout(request):
     if request.method == "POST":
         try:
             with transaction.atomic():
+                payment_method = request.POST.get("payment_method", "cod")
                 order = Order.objects.create(
                     user=request.user,
                     first_name=request.POST.get("first_name"),
@@ -144,7 +147,12 @@ def checkout(request):
                     phone=request.POST.get("phone"),
                     address=request.POST.get("address"),
                     total_amount=total,
+                    payment_method=payment_method,
                 )
+                if payment_method in ["card", "bkash"]:
+                    order.is_paid = True
+                    order.status = "processing"
+                    order.save(update_fields=["is_paid", "status"])
 
                 for item in cart.items.all():
                     if item.product.count < item.quantity:
@@ -158,7 +166,7 @@ def checkout(request):
                         price=item.product.price,
                         quantity=item.quantity,
                     )
-
+                    # Reduce stock
                     item.product.count -= item.quantity
                     item.product.save(update_fields=["count"])
 
@@ -212,3 +220,9 @@ def my_orders(request):
 def order_detail(request, pk):
     order = get_object_or_404(Order, pk=pk, user=request.user)
     return render(request, "order/order_detail.html", {"order": order})
+
+@login_required
+@require_GET
+def payment_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, "order/payment_success.html", {"order": order})

@@ -11,18 +11,61 @@
             <h2>Checkout</h2>
         </div>
 
+        {% if not user.is_authenticated %}
+            <p class="text-center">
+                Please <a href="{% url 'login' %}">login</a> to checkout.
+            </p>
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
 
             <div class="row">
+
+                <!-- LEFT: Customer Info + Payment -->
                 <div class="col-lg-8">
-                    <input type="text" name="first_name" placeholder="First Name" required>
-                    <input type="text" name="last_name" placeholder="Last Name" required>
+
+                    <h4 class="mb-3">Billing Details</h4>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <input type="text" name="first_name" placeholder="First Name" required>
+                        </div>
+                        <div class="col-lg-6">
+                            <input type="text" name="last_name" placeholder="Last Name" required>
+                        </div>
+                    </div>
+
                     <input type="email" name="email" placeholder="Email" required>
                     <input type="text" name="phone" placeholder="Phone" required>
                     <textarea name="address" placeholder="Delivery Address" required></textarea>
+
+                    <h4 class="mt-4 mb-3">Payment Method</h4>
+
+                    <div class="checkout-payment" style="padding: 15px; border: 1px solid #eee;">
+                        <label style="display:block; margin-bottom:10px;">
+                            <input type="radio" name="payment_method" value="cod" checked>
+                            Cash on Delivery
+                        </label>
+
+                        <label style="display:block; margin-bottom:10px;">
+                            <input type="radio" name="payment_method" value="bkash">
+                            bKash (Mock)
+                        </label>
+
+                        <label style="display:block;">
+                            <input type="radio" name="payment_method" value="card">
+                            Card (Mock)
+                        </label>
+
+                        <p class="mt-3" style="font-size: 13px; color: #666;">
+                            * bKash/Card are demo payments for portfolio.
+                        </p>
+                    </div>
+
                 </div>
 
+                <!-- RIGHT: Order Summary -->
                 <div class="col-lg-4">
                     <div class="checkout-summary">
                         <h4>Order Summary</h4>
@@ -39,9 +82,15 @@
 
                             <h5>Total: ৳ {{ cart_total|floatformat:2 }}</h5>
 
-                            <button type="submit" class="primary-btn w-100 mt-3">
-                                Place Order
-                            </button>
+                            {% if user.is_authenticated %}
+                                <button type="submit" class="primary-btn w-100 mt-3">
+                                    Place Order
+                                </button>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="primary-btn w-100 mt-3">
+                                    Login to Place Order
+                                </a>
+                            {% endif %}
                         {% else %}
                             <p>Your cart is empty.</p>
                             <a href="{% url 'home' %}" class="primary-btn w-100 mt-3">
@@ -50,6 +99,7 @@
                         {% endif %}
                     </div>
                 </div>
+
             </div>
         </form>
 
