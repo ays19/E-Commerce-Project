@@ -32,14 +32,11 @@ Database: SQLite3 (default for development)
 •
 Frontend: HTML, CSS, JavaScript, Bootstrap, jQuery
 
-**Usage
-**
-**Admin Panel
-**
+**Usage**
+**Admin Panel**
 Access the Django admin panel at http://127.0.0.1:8000/admin/ using the superuser credentials created during setup. Here you can manage products, categories, users, and orders.
 
-**User Flow
-**
+**User Flow**
 1.
 Browse Products: View available products on the homepage.
 
