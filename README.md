@@ -31,6 +31,7 @@ It demonstrates real-world web development skills using Django’s powerful MVC 
 
 
 **Product Features**
+
 • Product listing and detail pages
 
 • Category-based organization
@@ -54,6 +55,20 @@ It demonstrates real-world web development skills using Django’s powerful MVC 
 • Product management (CRUD)
 
 • User management
+
+**Project Structure**
+
+E-Commerce-Project/
+│
+├── config/                # Main Django project
+│   ├── config/            # Settings, URLs
+│   ├── product/           # Product app
+│   ├── user_account/      # User authentication app
+│   ├── manage.py
+│   └── db.sqlite3
+│
+└── violet-master/         # Frontend template assets
+
 
 
 **Responsive Design**
