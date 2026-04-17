@@ -60,14 +60,22 @@ It demonstrates real-world web development skills using Django’s powerful MVC 
 
 E-Commerce-Project/
 │
-├── config/                # Main Django project
-│   ├── config/            # Settings, URLs
-│   ├── product/           # Product app
-│   ├── user_account/      # User authentication app
+├── config/          
+                        # Main Django project
+│   ├── config/
+                        # Settings, URLs
+│   ├── product/    
+                        # Product app
+│   ├── user_account/
+                        # User authentication app
 │   ├── manage.py
+
 │   └── db.sqlite3
+
 │
-└── violet-master/         # Frontend template assets
+
+└── violet-master/
+                        # Frontend template assets
 
 
 
